@@ -202,6 +202,7 @@ public class MaterialIntroView extends RelativeLayout {
      * if this is true
      */
     private boolean isPerformClick;
+    private Activity activity;
 
     public MaterialIntroView(Context context) {
         super(context);
@@ -225,6 +226,9 @@ public class MaterialIntroView extends RelativeLayout {
     }
 
     private void init(Context context) {
+        if (context instanceof Activity) {
+            activity = (Activity) context;
+        }
         setWillNotDraw(false);
         setVisibility(INVISIBLE);
 
@@ -326,6 +330,7 @@ public class MaterialIntroView extends RelativeLayout {
          */
         circleShape.draw(this.canvas, eraser, padding);
 
+        assert canvas != null;
         canvas.drawBitmap(bitmap, 0, 0, null);
     }
 
@@ -385,14 +390,16 @@ public class MaterialIntroView extends RelativeLayout {
      * Shows material view with fade in
      * animation
      *
-     * @param activity
      */
-    private void show(Activity activity) {
+    public void show() {
 
         if (preferencesManager.isDisplayed(materialIntroViewId))
             return;
 
-        ((ViewGroup) activity.getWindow().getDecorView()).addView(this);
+        if (activity == null) {
+            throw new RuntimeException("MaterialIntroView need a activity context");
+        }
+        ((ViewGroup)activity.getWindow().getDecorView()).addView(this);
 
         setReady(true);
 
@@ -416,7 +423,7 @@ public class MaterialIntroView extends RelativeLayout {
     /**
      * Dismiss Material Intro View
      */
-    private void dismiss() {
+    public void dismiss() {
         preferencesManager.setDisplayed(materialIntroViewId);
         AnimationFactory.animateFadeOut(this, fadeAnimationDuration, new AnimationListener.OnAnimationEndListener() {
             @Override
@@ -720,8 +727,13 @@ public class MaterialIntroView extends RelativeLayout {
             return materialIntroView;
         }
 
+        /**
+         * this method is deprecated,change to use MaterialIntroView.show() method directly
+         * @return MaterialIntroView
+         */
+        @Deprecated
         public MaterialIntroView show() {
-            build().show(activity);
+            build().show();
             return materialIntroView;
         }
 
