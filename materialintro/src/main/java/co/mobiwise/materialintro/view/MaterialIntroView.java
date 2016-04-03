@@ -230,7 +230,6 @@ public class MaterialIntroView extends RelativeLayout {
             activity = (Activity) context;
         }
         setWillNotDraw(false);
-        setVisibility(INVISIBLE);
 
         /**
          * set default values
@@ -280,7 +279,7 @@ public class MaterialIntroView extends RelativeLayout {
                 if (circleShape != null && circleShape.getPoint().y != 0 && !isLayoutCompleted) {
                     if (isInfoEnabled)
                         setInfoLayout();
-                    if(isDotViewEnabled)
+                    if (isDotViewEnabled)
                         setDotViewLayout();
                     removeOnGlobalLayoutListener(MaterialIntroView.this, this);
                 }
@@ -290,7 +289,7 @@ public class MaterialIntroView extends RelativeLayout {
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public static void removeOnGlobalLayoutListener(View v, ViewTreeObserver.OnGlobalLayoutListener listener){
+    public static void removeOnGlobalLayoutListener(View v, ViewTreeObserver.OnGlobalLayoutListener listener) {
         if (Build.VERSION.SDK_INT < 16) {
             v.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
         } else {
@@ -389,7 +388,6 @@ public class MaterialIntroView extends RelativeLayout {
     /**
      * Shows material view with fade in
      * animation
-     *
      */
     public void show() {
 
@@ -399,9 +397,17 @@ public class MaterialIntroView extends RelativeLayout {
         if (activity == null) {
             throw new RuntimeException("MaterialIntroView need a activity context");
         }
-        ((ViewGroup)activity.getWindow().getDecorView()).addView(this);
+        if (getParent() == null) {
+            setVisibility(INVISIBLE);
+            ((ViewGroup) activity.getWindow().getDecorView()).addView(this);
+        }
 
         setReady(true);
+
+        //set padding distance to bottom navigation bar if device has bottom navigation bar
+        int identifier = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        int height = getResources().getDimensionPixelSize(identifier);
+        setPadding(0, 0, 0, height);
 
         handler.postDelayed(new Runnable() {
             @Override
@@ -416,7 +422,7 @@ public class MaterialIntroView extends RelativeLayout {
                 else
                     setVisibility(VISIBLE);
             }
-        },delayMillis);
+        }, delayMillis);
 
     }
 
@@ -437,8 +443,8 @@ public class MaterialIntroView extends RelativeLayout {
         });
     }
 
-    private void removeMaterialView(){
-        if(getParent() != null )
+    private void removeMaterialView() {
+        if (getParent() != null)
             ((ViewGroup) getParent()).removeView(this);
     }
 
@@ -483,7 +489,7 @@ public class MaterialIntroView extends RelativeLayout {
 
                 addView(infoView);
 
-                if (!isImageViewEnabled){
+                if (!isImageViewEnabled) {
                     imageViewIcon.setVisibility(GONE);
                 }
 
@@ -580,11 +586,11 @@ public class MaterialIntroView extends RelativeLayout {
         this.isInfoEnabled = isInfoEnabled;
     }
 
-    private void enableImageViewIcon(boolean isImageViewEnabled){
+    private void enableImageViewIcon(boolean isImageViewEnabled) {
         this.isImageViewEnabled = isImageViewEnabled;
     }
 
-    private void enableDotView(boolean isDotViewEnabled){
+    private void enableDotView(boolean isDotViewEnabled) {
         this.isDotViewEnabled = isDotViewEnabled;
     }
 
@@ -611,7 +617,7 @@ public class MaterialIntroView extends RelativeLayout {
         this.materialIntroListener = materialIntroListener;
     }
 
-    private void setPerformClick(boolean isPerformClick){
+    private void setPerformClick(boolean isPerformClick) {
         this.isPerformClick = isPerformClick;
     }
 
@@ -622,13 +628,14 @@ public class MaterialIntroView extends RelativeLayout {
 
         private MaterialIntroView materialIntroView;
 
-        private Activity activity;
-
         private Focus focusType = Focus.MINIMUM;
 
         public Builder(Activity activity) {
-            this.activity = activity;
             materialIntroView = new MaterialIntroView(activity);
+        }
+
+        public Builder(MaterialIntroView materialIntroView) {
+            this.materialIntroView = materialIntroView;
         }
 
         public Builder setMaskColor(int maskColor) {
@@ -712,7 +719,7 @@ public class MaterialIntroView extends RelativeLayout {
             return this;
         }
 
-        public Builder performClick(boolean isPerformClick){
+        public Builder performClick(boolean isPerformClick) {
             materialIntroView.setPerformClick(isPerformClick);
             return this;
         }
@@ -729,6 +736,7 @@ public class MaterialIntroView extends RelativeLayout {
 
         /**
          * this method is deprecated,change to use MaterialIntroView.show() method directly
+         *
          * @return MaterialIntroView
          */
         @Deprecated
