@@ -1,5 +1,6 @@
 package co.mobiwise.materialintro.view;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -15,15 +16,20 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyCharacterMap;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import co.mobiwise.materialintro.InfoViewConfiguration;
 import co.mobiwise.materialintro.animation.AnimationFactory;
 import co.mobiwise.materialintro.animation.AnimationListener;
 import co.mobiwise.materialintro.animation.MaterialIntroListener;
@@ -42,7 +48,7 @@ import co.mobiwise.materialintro.target.ViewTarget;
  * Created by mertsimsek on 22/01/16.
  */
 public class MaterialIntroView extends RelativeLayout {
-
+    private static final String TAG = "MaterialIntroView";
     /**
      * Mask color
      */
@@ -203,6 +209,7 @@ public class MaterialIntroView extends RelativeLayout {
      */
     private boolean isPerformClick;
     private Activity activity;
+    private InfoViewConfiguration infoViewConfiguration;
 
     public MaterialIntroView(Context context) {
         super(context);
@@ -390,7 +397,7 @@ public class MaterialIntroView extends RelativeLayout {
      * animation
      */
     public void show() {
-
+        Log.i(TAG, "show method called");
         if (preferencesManager.isDisplayed(materialIntroViewId))
             return;
 
@@ -404,10 +411,12 @@ public class MaterialIntroView extends RelativeLayout {
 
         setReady(true);
 
-        //set padding distance to bottom navigation bar if device has bottom navigation bar
-        int identifier = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-        int height = getResources().getDimensionPixelSize(identifier);
-        setPadding(0, 0, 0, height);
+        if (hasNavigationBar(activity)) {
+            //set padding distance to bottom navigation bar if device has bottom navigation bar
+            int identifier = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+            int height = getResources().getDimensionPixelSize(identifier);
+            setPadding(0, 0, 0, height);
+        }
 
         handler.postDelayed(new Runnable() {
             @Override
@@ -424,6 +433,21 @@ public class MaterialIntroView extends RelativeLayout {
             }
         }, delayMillis);
 
+    }
+
+    @SuppressLint("NewApi")
+    private boolean hasNavigationBar(Context activity) {
+        //通过判断设备是否有返回键、菜单键(不是虚拟键,是手机屏幕外的按键)来确定是否有navigation bar
+        boolean hasMenuKey = ViewConfiguration.get(activity)
+                .hasPermanentMenuKey();
+        boolean hasBackKey = KeyCharacterMap
+                .deviceHasKey(KeyEvent.KEYCODE_BACK);
+
+        if (!hasMenuKey && !hasBackKey) {
+            // 做任何你需要做的,这个设备有一个导航栏
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -461,42 +485,104 @@ public class MaterialIntroView extends RelativeLayout {
             public void run() {
                 isLayoutCompleted = true;
 
+                if (infoViewConfiguration != null) {
+                    infoView = infoViewConfiguration.getInfoView();
+                }
+
                 if (infoView.getParent() != null)
                     ((ViewGroup) infoView.getParent()).removeView(infoView);
 
-                RelativeLayout.LayoutParams infoDialogParams = new RelativeLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.FILL_PARENT);
-
-                if (circleShape.getPoint().y < height / 2) {
-                    ((RelativeLayout) infoView).setGravity(Gravity.TOP);
-                    infoDialogParams.setMargins(
-                            0,
-                            circleShape.getPoint().y + circleShape.getRadius(),
-                            0,
-                            0);
+                if (infoViewConfiguration != null) {
+                    setCustomInfoLayout();
                 } else {
-                    ((RelativeLayout) infoView).setGravity(Gravity.BOTTOM);
-                    infoDialogParams.setMargins(
-                            0,
-                            0,
-                            0,
-                            height - (circleShape.getPoint().y + circleShape.getRadius()) + 2 * circleShape.getRadius());
+                    setDefaultInfoLayout();
                 }
-
-                infoView.setLayoutParams(infoDialogParams);
-                infoView.postInvalidate();
-
-                addView(infoView);
-
-                if (!isImageViewEnabled) {
-                    imageViewIcon.setVisibility(GONE);
-                }
-
-                infoView.setVisibility(VISIBLE);
             }
+
+
         });
     }
+
+
+    private void setCustomInfoLayout() {
+        RelativeLayout.LayoutParams infoDialogParams = new RelativeLayout.LayoutParams(
+                Utils.dpToPx(200),
+                ViewGroup.LayoutParams.MATCH_PARENT);
+        Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
+        int leftMargin = 0;
+        if (infoViewConfiguration.isAlignCenter()) {
+            leftMargin = Math.max(circleShape.getPoint().x - Utils.dpToPx(100), 0);
+        }
+        if (circleShape.getPoint().y < height / 2) {
+            ((RelativeLayout) infoView).setGravity(Gravity.TOP);
+            infoDialogParams.setMargins(
+                    leftMargin,
+                    circleShape.getPoint().y + circleShape.getRadius(),
+                    0,
+                    0);
+        } else {
+            ((RelativeLayout) infoView).setGravity(Gravity.BOTTOM);
+            infoDialogParams.setMargins(
+                    leftMargin,
+                    0,
+                    0,
+                    height - (circleShape.getPoint().y + circleShape.getRadius()) + 2 * circleShape.getRadius());
+        }
+
+        infoView.setLayoutParams(infoDialogParams);
+        infoView.postInvalidate();
+
+        addView(infoView);
+
+        if (!isImageViewEnabled) {
+            imageViewIcon.setVisibility(GONE);
+        }
+
+        infoView.setVisibility(VISIBLE);
+        if (infoViewConfiguration != null) {
+            infoViewConfiguration.getAnimator().start();
+        }
+        Log.i(TAG, "infoView: width=" + infoView.getTranslationX() + " height=" + infoView.getTranslationY());
+        Log.i(TAG, "infoView: x=" + infoView.getX() + " y=" + infoView.getY());
+    }
+
+    private void setDefaultInfoLayout() {
+        RelativeLayout.LayoutParams infoDialogParams = new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+        Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
+
+        if (circleShape.getPoint().y < height / 2) {
+            ((RelativeLayout) infoView).setGravity(Gravity.TOP);
+            infoDialogParams.setMargins(
+                    0,
+                    circleShape.getPoint().y + circleShape.getRadius(),
+                    0,
+                    0);
+        } else {
+            ((RelativeLayout) infoView).setGravity(Gravity.BOTTOM);
+            infoDialogParams.setMargins(
+                    0,
+                    0,
+                    0,
+                    height - (circleShape.getPoint().y + circleShape.getRadius()) + 2 * circleShape.getRadius());
+        }
+
+        infoView.setLayoutParams(infoDialogParams);
+        infoView.postInvalidate();
+
+        addView(infoView);
+
+        if (!isImageViewEnabled) {
+            imageViewIcon.setVisibility(GONE);
+        }
+
+        infoView.setVisibility(VISIBLE);
+
+        Log.i(TAG, "infoView: width=" + infoView.getTranslationX() + " height=" + infoView.getTranslationY());
+        Log.i(TAG, "infoView: x=" + infoView.getX() + " y=" + infoView.getY());
+    }
+
 
     private void setDotViewLayout() {
 
@@ -621,6 +707,10 @@ public class MaterialIntroView extends RelativeLayout {
         this.isPerformClick = isPerformClick;
     }
 
+    public void setInfoViewConfiguration(InfoViewConfiguration infoViewConfiguration) {
+        this.infoViewConfiguration = infoViewConfiguration;
+    }
+
     /**
      * Builder Class
      */
@@ -711,6 +801,11 @@ public class MaterialIntroView extends RelativeLayout {
 
         public Builder setConfiguration(MaterialIntroConfiguration configuration) {
             materialIntroView.setConfiguration(configuration);
+            return this;
+        }
+
+        public Builder setInfoViewConfiguration(InfoViewConfiguration configuration) {
+            materialIntroView.setInfoViewConfiguration(configuration);
             return this;
         }
 
