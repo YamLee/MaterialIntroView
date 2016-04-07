@@ -374,7 +374,7 @@ public class MaterialIntroView extends RelativeLayout {
             case MotionEvent.ACTION_UP:
 
                 if (isTouchOnFocus || dismissOnTouch)
-                    dismiss();
+                    dismissWithUserClick();
 
                 if (isTouchOnFocus && isPerformClick) {
                     targetView.getView().performClick();
@@ -460,6 +460,17 @@ public class MaterialIntroView extends RelativeLayout {
             public void onAnimationEnd() {
                 setVisibility(GONE);
                 removeMaterialView();
+            }
+        });
+    }
+
+    private void dismissWithUserClick() {
+        preferencesManager.setDisplayed(materialIntroViewId);
+        AnimationFactory.animateFadeOut(this, fadeAnimationDuration, new AnimationListener.OnAnimationEndListener() {
+            @Override
+            public void onAnimationEnd() {
+                setVisibility(GONE);
+                removeMaterialView();
 
                 if (materialIntroListener != null)
                     materialIntroListener.onUserClicked(materialIntroViewId);
@@ -506,12 +517,12 @@ public class MaterialIntroView extends RelativeLayout {
 
     private void setCustomInfoLayout() {
         RelativeLayout.LayoutParams infoDialogParams = new RelativeLayout.LayoutParams(
-                Utils.dpToPx(200),
+                Utils.dpToPx(260),
                 ViewGroup.LayoutParams.MATCH_PARENT);
         Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
         int leftMargin = 0;
         if (infoViewConfiguration.isAlignCenter()) {
-            leftMargin = Math.max(circleShape.getPoint().x - Utils.dpToPx(100), 0);
+            leftMargin = Math.max(circleShape.getPoint().x - Utils.dpToPx(130), 0);
         }
         if (circleShape.getPoint().y < height / 2) {
             ((RelativeLayout) infoView).setGravity(Gravity.TOP);
