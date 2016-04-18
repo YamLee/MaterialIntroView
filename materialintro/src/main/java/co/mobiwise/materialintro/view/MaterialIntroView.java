@@ -41,8 +41,13 @@ import co.mobiwise.materialintro.utils.Utils;
 import co.mobiwise.materialintro.shape.Circle;
 import co.mobiwise.materialintro.shape.Focus;
 import co.mobiwise.materialintro.shape.FocusGravity;
+import co.mobiwise.materialintro.shape.Rect;
+import co.mobiwise.materialintro.shape.Shape;
+import co.mobiwise.materialintro.shape.ShapeType;
 import co.mobiwise.materialintro.target.Target;
 import co.mobiwise.materialintro.target.ViewTarget;
+import co.mobiwise.materialintro.utils.Constants;
+import co.mobiwise.materialintro.utils.Utils;
 
 /**
  * Created by mertsimsek on 22/01/16.
@@ -80,10 +85,10 @@ public class MaterialIntroView extends RelativeLayout {
     private long fadeAnimationDuration;
 
     /**
-     * circleShape focus on target
+     * targetShape focus on target
      * and clear circle to focus
      */
-    private Circle circleShape;
+    private Shape targetShape;
 
     /**
      * Focus Type
@@ -211,6 +216,21 @@ public class MaterialIntroView extends RelativeLayout {
     private Activity activity;
     private InfoViewConfiguration infoViewConfiguration;
 
+    /**
+     * Disallow this MaterialIntroView from showing up more than once at a time
+     */
+    private boolean isIdempotent;
+
+    /**
+     * Shape of target
+     */
+    private ShapeType shapeType;
+
+    /**
+     * Use custom shape
+     */
+    private boolean usesCustomShape = false;
+
     public MaterialIntroView(Context context) {
         super(context);
         init(context);
@@ -248,6 +268,7 @@ public class MaterialIntroView extends RelativeLayout {
         colorTextViewInfo = Constants.DEFAULT_COLOR_TEXTVIEW_INFO;
         focusType = Focus.ALL;
         focusGravity = FocusGravity.CENTER;
+        shapeType = ShapeType.CIRCLE;
         isReady = false;
         isFadeAnimationEnabled = true;
         dismissOnTouch = false;
@@ -256,6 +277,7 @@ public class MaterialIntroView extends RelativeLayout {
         isDotViewEnabled = false;
         isPerformClick = false;
         isImageViewEnabled = true;
+        isIdempotent = false;
 
         /**
          * initialize objects
@@ -282,8 +304,8 @@ public class MaterialIntroView extends RelativeLayout {
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                circleShape.reCalculateAll();
-                if (circleShape != null && circleShape.getPoint().y != 0 && !isLayoutCompleted) {
+                targetShape.reCalculateAll();
+                if (targetShape != null && targetShape.getPoint().y != 0 && !isLayoutCompleted) {
                     if (isInfoEnabled)
                         setInfoLayout();
                     if (isDotViewEnabled)
@@ -334,9 +356,8 @@ public class MaterialIntroView extends RelativeLayout {
         /**
          * Clear focus area
          */
-        circleShape.draw(this.canvas, eraser, padding);
+        targetShape.draw(this.canvas, eraser, padding);
 
-        assert canvas != null;
         canvas.drawBitmap(bitmap, 0, 0, null);
     }
 
@@ -352,15 +373,7 @@ public class MaterialIntroView extends RelativeLayout {
         float xT = event.getX();
         float yT = event.getY();
 
-        int xV = circleShape.getPoint().x;
-        int yV = circleShape.getPoint().y;
-
-        int radius = circleShape.getRadius();
-
-        double dx = Math.pow(xT - xV, 2);
-        double dy = Math.pow(yT - yV, 2);
-
-        boolean isTouchOnFocus = (dx + dy) <= Math.pow(radius, 2);
+        boolean isTouchOnFocus = targetShape.isTouchOnFocus(xT, yT);
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -431,6 +444,9 @@ public class MaterialIntroView extends RelativeLayout {
             }
         }, delayMillis);
 
+        if(isIdempotent) {
+            preferencesManager.setDisplayed(materialIntroViewId);
+        }
     }
 
     @SuppressLint("NewApi")
@@ -452,7 +468,10 @@ public class MaterialIntroView extends RelativeLayout {
      * Dismiss Material Intro View
      */
     public void dismiss() {
-        preferencesManager.setDisplayed(materialIntroViewId);
+        if(!isIdempotent) {
+            preferencesManager.setDisplayed(materialIntroViewId);
+        }
+
         AnimationFactory.animateFadeOut(this, fadeAnimationDuration, new AnimationListener.OnAnimationEndListener() {
             @Override
             public void onAnimationEnd() {
@@ -561,21 +580,21 @@ public class MaterialIntroView extends RelativeLayout {
                 ViewGroup.LayoutParams.MATCH_PARENT);
         Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
 
-        if (circleShape.getPoint().y < height / 2) {
-            ((RelativeLayout) infoView).setGravity(Gravity.TOP);
-            infoDialogParams.setMargins(
-                    0,
-                    circleShape.getPoint().y + circleShape.getRadius(),
-                    0,
-                    0);
-        } else {
-            ((RelativeLayout) infoView).setGravity(Gravity.BOTTOM);
-            infoDialogParams.setMargins(
-                    0,
-                    0,
-                    0,
-                    height - (circleShape.getPoint().y + circleShape.getRadius()) + 2 * circleShape.getRadius());
-        }
+                if (targetShape.getPoint().y < height / 2) {
+                    ((RelativeLayout) infoView).setGravity(Gravity.TOP);
+                    infoDialogParams.setMargins(
+                            0,
+                            targetShape.getPoint().y + targetShape.getHeight() / 2,
+                            0,
+                            0);
+                } else {
+                    ((RelativeLayout) infoView).setGravity(Gravity.BOTTOM);
+                    infoDialogParams.setMargins(
+                            0,
+                            0,
+                            0,
+                            height - (targetShape.getPoint().y + targetShape.getHeight() / 2) + 2 * targetShape.getHeight() / 2);
+                }
 
         infoView.setLayoutParams(infoDialogParams);
         infoView.postInvalidate();
@@ -606,8 +625,8 @@ public class MaterialIntroView extends RelativeLayout {
                 dotViewLayoutParams.height = Utils.dpToPx(Constants.DEFAULT_DOT_SIZE);
                 dotViewLayoutParams.width = Utils.dpToPx(Constants.DEFAULT_DOT_SIZE);
                 dotViewLayoutParams.setMargins(
-                        circleShape.getPoint().x - (dotViewLayoutParams.width / 2),
-                        circleShape.getPoint().y - (dotViewLayoutParams.height / 2),
+                        targetShape.getPoint().x - (dotViewLayoutParams.width / 2),
+                        targetShape.getPoint().y - (dotViewLayoutParams.height / 2),
                         0,
                         0);
                 dotView.setLayoutParams(dotViewLayoutParams);
@@ -636,6 +655,10 @@ public class MaterialIntroView extends RelativeLayout {
         this.isFadeAnimationEnabled = isFadeAnimationEnabled;
     }
 
+    private void setShapeType(ShapeType shape) {
+        this.shapeType = shape;
+    }
+
     private void setReady(boolean isReady) {
         this.isReady = isReady;
     }
@@ -648,8 +671,8 @@ public class MaterialIntroView extends RelativeLayout {
         this.focusType = focusType;
     }
 
-    private void setCircle(Circle circleShape) {
-        this.circleShape = circleShape;
+    private void setShape(Shape shape) {
+        this.targetShape = shape;
     }
 
     private void setPadding(int padding) {
@@ -685,7 +708,11 @@ public class MaterialIntroView extends RelativeLayout {
         this.isImageViewEnabled = isImageViewEnabled;
     }
 
-    private void enableDotView(boolean isDotViewEnabled) {
+    private void setIdempotent(boolean idempotent){
+        this.isIdempotent = idempotent;
+    }
+
+    private void enableDotView(boolean isDotViewEnabled){
         this.isDotViewEnabled = isDotViewEnabled;
     }
 
@@ -752,6 +779,11 @@ public class MaterialIntroView extends RelativeLayout {
             return this;
         }
 
+        public Builder setShape(ShapeType shape) {
+            materialIntroView.setShapeType(shape);
+            return this;
+        }
+
         public Builder setFocusType(Focus focusType) {
             materialIntroView.setFocusType(focusType);
             return this;
@@ -808,6 +840,11 @@ public class MaterialIntroView extends RelativeLayout {
             return this;
         }
 
+        public Builder setIdempotent(boolean idempotent) {
+            materialIntroView.setIdempotent(idempotent);
+            return this;
+        }
+
         public Builder setConfiguration(MaterialIntroConfiguration configuration) {
             materialIntroView.setConfiguration(configuration);
             return this;
@@ -823,18 +860,40 @@ public class MaterialIntroView extends RelativeLayout {
             return this;
         }
 
-        public Builder performClick(boolean isPerformClick) {
+        public Builder setCustomShape(Shape shape) {
+            materialIntroView.usesCustomShape = true;
+            materialIntroView.setShape(shape);
+            return this;
+        }
+
+        public Builder performClick(boolean isPerformClick){
             materialIntroView.setPerformClick(isPerformClick);
             return this;
         }
 
         public MaterialIntroView build() {
-            Circle circle = new Circle(
-                    materialIntroView.targetView,
-                    materialIntroView.focusType,
-                    materialIntroView.focusGravity,
-                    materialIntroView.padding);
-            materialIntroView.setCircle(circle);
+            if(materialIntroView.usesCustomShape) {
+                return materialIntroView;
+            }
+
+            // no custom shape supplied, build our own
+            Shape shape;
+
+            if(materialIntroView.shapeType == ShapeType.CIRCLE) {
+                shape = new Circle(
+                        materialIntroView.targetView,
+                        materialIntroView.focusType,
+                        materialIntroView.focusGravity,
+                        materialIntroView.padding);
+            } else {
+                shape = new Rect(
+                        materialIntroView.targetView,
+                        materialIntroView.focusType,
+                        materialIntroView.focusGravity,
+                        materialIntroView.padding);
+            }
+
+            materialIntroView.setShape(shape);
             return materialIntroView;
         }
 
