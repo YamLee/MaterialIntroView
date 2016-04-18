@@ -12,6 +12,7 @@ import android.widget.Button;
 import co.mobiwise.materialintro.InfoViewConfiguration;
 import co.mobiwise.materialintro.shape.Focus;
 import co.mobiwise.materialintro.shape.FocusGravity;
+import co.mobiwise.materialintro.shape.ShapeType;
 import co.mobiwise.materialintro.view.MaterialIntroView;
 import co.mobiwise.sample.R;
 
@@ -43,6 +44,7 @@ public class CustomInfoViewFragment extends Fragment {
         mMaterialIntroView = builder
                 .enableDotAnimation(false)
                 .enableIcon(false)
+                .setShape(ShapeType.RECTANGLE)
                 .setFocusGravity(FocusGravity.CENTER)
                 .setFocusType(Focus.MINIMUM)
                 .setDelayMillis(500)

@@ -539,13 +539,13 @@ public class MaterialIntroView extends RelativeLayout {
         Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
         int leftMargin = 0;
         if (infoViewConfiguration.isAlignCenter()) {
-            leftMargin = Math.max(circleShape.getPoint().x - Utils.dpToPx(130), 0);
+            leftMargin = Math.max(targetShape.getPoint().x - Utils.dpToPx(130), 0);
         }
-        if (circleShape.getPoint().y < height / 2) {
+        if (targetShape.getPoint().y < height / 2) {
             ((RelativeLayout) infoView).setGravity(Gravity.TOP);
             infoDialogParams.setMargins(
                     leftMargin,
-                    circleShape.getPoint().y + circleShape.getRadius(),
+                    targetShape.getPoint().y + targetShape.getHeight(),
                     0,
                     0);
         } else {
@@ -554,7 +554,7 @@ public class MaterialIntroView extends RelativeLayout {
                     leftMargin,
                     0,
                     0,
-                    height - (circleShape.getPoint().y + circleShape.getRadius()) + 2 * circleShape.getRadius());
+                    height - (targetShape.getPoint().y + targetShape.getHeight()) + 2 * targetShape.getHeight());
         }
 
         infoView.setLayoutParams(infoDialogParams);
