@@ -12,7 +12,7 @@ import android.view.MenuItem;
 
 import co.mobiwise.sample.fragment.FocusFragment;
 import co.mobiwise.sample.fragment.GravityFragment;
-import co.mobiwise.sample.fragment.LayoutUseFragment;
+import co.mobiwise.sample.fragment.CustomInfoViewFragment;
 import co.mobiwise.sample.fragment.MainFragment;
 import co.mobiwise.sample.fragment.RecyclerviewFragment;
 
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_tab) {
 
         } else if (id == R.id.nav_layout_use) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.container, new LayoutUseFragment()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, new CustomInfoViewFragment()).commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

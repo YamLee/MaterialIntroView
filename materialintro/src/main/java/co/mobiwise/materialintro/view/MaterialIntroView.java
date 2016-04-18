@@ -411,12 +411,10 @@ public class MaterialIntroView extends RelativeLayout {
 
         setReady(true);
 
-        if (hasNavigationBar(activity)) {
-            //set padding distance to bottom navigation bar if device has bottom navigation bar
-            int identifier = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-            int height = getResources().getDimensionPixelSize(identifier);
-            setPadding(0, 0, 0, height);
-        }
+        //set padding distance to bottom navigation bar if device has bottom navigation bar
+        int identifier = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        int height = getResources().getDimensionPixelSize(identifier);
+        setPadding(0, 0, 0, height);
 
         handler.postDelayed(new Runnable() {
             @Override

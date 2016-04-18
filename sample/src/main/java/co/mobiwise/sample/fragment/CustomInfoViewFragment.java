@@ -19,7 +19,7 @@ import co.mobiwise.sample.R;
  * Created by yamlee on 4/2/16.
  * demonstration for how to use MaterialIntroView in layout file
  */
-public class LayoutUseFragment extends Fragment {
+public class CustomInfoViewFragment extends Fragment {
     private MaterialIntroView mMaterialIntroView;
 
 
