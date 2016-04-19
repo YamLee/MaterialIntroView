@@ -10,6 +10,7 @@ public class InfoViewConfiguration {
     private View infoView;
     private ObjectAnimator animator;
     private boolean alignCenter;
+    private int targetMargin;
 
     public ObjectAnimator getAnimator() {
         return animator;
@@ -33,5 +34,13 @@ public class InfoViewConfiguration {
 
     public void setAlignCenter(boolean alignCenter) {
         this.alignCenter = alignCenter;
+    }
+
+    public int getTargetMargin() {
+        return targetMargin;
+    }
+
+    public void setTargetMargin(int targetMargin) {
+        this.targetMargin = targetMargin;
     }
 }

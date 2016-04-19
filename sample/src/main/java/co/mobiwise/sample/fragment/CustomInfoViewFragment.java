@@ -16,6 +16,7 @@ import co.mobiwise.materialintro.animation.MaterialIntroListener;
 import co.mobiwise.materialintro.shape.Focus;
 import co.mobiwise.materialintro.shape.FocusGravity;
 import co.mobiwise.materialintro.shape.ShapeType;
+import co.mobiwise.materialintro.utils.Utils;
 import co.mobiwise.materialintro.view.MaterialIntroView;
 import co.mobiwise.sample.R;
 
@@ -95,6 +96,7 @@ public class CustomInfoViewFragment extends Fragment {
         objectAnimator.setRepeatCount(ObjectAnimator.INFINITE);
         objectAnimator.setRepeatMode(ObjectAnimator.REVERSE);
         infoViewConfiguration.setAnimator(objectAnimator);
+        infoViewConfiguration.setTargetMargin(Utils.dpToPx(1));
         infoViewConfiguration.setAlignCenter(true);
         return builder.enableDotAnimation(false)
                 .enableIcon(false)
@@ -102,6 +104,7 @@ public class CustomInfoViewFragment extends Fragment {
                 .setFocusGravity(FocusGravity.CENTER)
                 .setFocusType(Focus.MINIMUM)
                 .setDelayMillis(500)
+                .clickFocusThenDismiss(false)
                 .enableFadeAnimation(true)
                 .performClick(true)
                 .setIdempotent(true)

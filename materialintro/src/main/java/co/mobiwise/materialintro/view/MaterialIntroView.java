@@ -227,6 +227,10 @@ public class MaterialIntroView extends RelativeLayout {
      * Use custom shape
      */
     private boolean usesCustomShape = false;
+    /**
+     * click focus area then dismiss intro view
+     */
+    private boolean isClickFocusThenDismiss = true;
 
     public MaterialIntroView(Context context) {
         super(context);
@@ -484,6 +488,9 @@ public class MaterialIntroView extends RelativeLayout {
     }
 
     private void dismissWithUserClick() {
+        if (!isClickFocusThenDismiss) {
+            return;
+        }
         preferencesManager.setDisplayed(materialIntroViewId);
         AnimationFactory.animateFadeOut(this, fadeAnimationDuration, new AnimationListener.OnAnimationEndListener() {
             @Override
@@ -541,14 +548,18 @@ public class MaterialIntroView extends RelativeLayout {
                         ViewGroup.LayoutParams.MATCH_PARENT);
         Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
         int leftMargin = 0;
+        int targetMargin = targetShape.getHeight() / 2;
         if (infoViewConfiguration.isAlignCenter()) {
             leftMargin = Math.max(targetShape.getPoint().x - Utils.dpToPx(130), 0);
+        }
+        if (infoViewConfiguration.getTargetMargin() != 0) {
+            targetMargin = infoViewConfiguration.getTargetMargin();
         }
         if (targetShape.getPoint().y < height / 2) {
             ((RelativeLayout) infoView).setGravity(Gravity.TOP);
             infoDialogParams.setMargins(
                     leftMargin,
-                    targetShape.getPoint().y + targetShape.getHeight(),
+                    targetShape.getPoint().y + targetShape.getHeight() / 2 + targetMargin,
                     0,
                     0);
         } else {
@@ -557,7 +568,8 @@ public class MaterialIntroView extends RelativeLayout {
                     leftMargin,
                     0,
                     0,
-                    height - getNavigationBarHeight() - targetShape.getPoint().y + targetShape.getHeight());
+                    height - getNavigationBarHeight() - targetShape.getPoint().y +
+                            targetShape.getHeight() / 2 + targetMargin);
         }
 
         infoView.setLayoutParams(infoDialogParams);
@@ -746,9 +758,14 @@ public class MaterialIntroView extends RelativeLayout {
         this.isPerformClick = isPerformClick;
     }
 
-    public void setInfoViewConfiguration(InfoViewConfiguration infoViewConfiguration) {
+    private void setInfoViewConfiguration(InfoViewConfiguration infoViewConfiguration) {
         this.infoViewConfiguration = infoViewConfiguration;
     }
+
+    private void setClickFocusThenDismiss(boolean isClickFocusThenDismiss) {
+        this.isClickFocusThenDismiss = isClickFocusThenDismiss;
+    }
+
 
     /**
      * Builder Class
@@ -871,6 +888,17 @@ public class MaterialIntroView extends RelativeLayout {
 
         public Builder performClick(boolean isPerformClick) {
             materialIntroView.setPerformClick(isPerformClick);
+            return this;
+        }
+
+        /**
+         * set if click the focus area the dismiss intro view
+         *
+         * @param isClickThenDismiss
+         * @return
+         */
+        public Builder clickFocusThenDismiss(boolean isClickThenDismiss) {
+            materialIntroView.setClickFocusThenDismiss(isClickThenDismiss);
             return this;
         }
 
