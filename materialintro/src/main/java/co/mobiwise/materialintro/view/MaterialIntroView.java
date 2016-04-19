@@ -537,8 +537,8 @@ public class MaterialIntroView extends RelativeLayout {
     private void setCustomInfoLayout() {
         RelativeLayout.LayoutParams infoDialogParams =
                 new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.MATCH_PARENT);
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT);
         Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
         int leftMargin = 0;
         if (infoViewConfiguration.isAlignCenter()) {
@@ -570,7 +570,7 @@ public class MaterialIntroView extends RelativeLayout {
         }
 
         infoView.setVisibility(VISIBLE);
-        if (infoViewConfiguration != null) {
+        if (infoViewConfiguration != null && infoViewConfiguration.getAnimator() != null) {
             infoViewConfiguration.getAnimator().start();
         }
         Log.i(TAG, "infoView: width=" + infoView.getTranslationX() + " height=" + infoView.getTranslationY());
