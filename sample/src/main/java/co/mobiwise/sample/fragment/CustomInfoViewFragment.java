@@ -1,7 +1,9 @@
 package co.mobiwise.sample.fragment;
 
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -37,6 +39,49 @@ public class CustomInfoViewFragment extends Fragment {
         return view;
     }
 
+    private MaterialIntroView buildIntro(Context context, View target) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        MaterialIntroView materialIntroView = (MaterialIntroView) inflater.inflate(R.layout.layout_custom_material_intro_view, null);
+        //if you need custom materialIntroView,such as add a "confirm" button ,you can pass a inflate materialIntroView to it's builder constructor
+        MaterialIntroView.Builder builder = new MaterialIntroView.Builder(materialIntroView);
+        InfoViewConfiguration infoViewConfiguration = buildInfoViewConfiguration(inflater);
+        return builder.enableDotAnimation(false)
+                .enableIcon(false)
+                .setShape(ShapeType.RECTANGLE)
+                .setFocusGravity(FocusGravity.CENTER)
+                .setFocusType(Focus.MINIMUM)
+                .setDelayMillis(500)
+                .enableFadeAnimation(true)
+                .performClick(true)
+                .setIdempotent(true)
+                .setListener(new MaterialIntroListener() {
+                    @Override
+                    public void onUserClicked(String materialIntroViewId) {
+                        mSecondMaterialIntroView.show();
+                    }
+                })
+                .setInfoText("Hi There! Click this card and see what happens.")
+                .setInfoViewConfiguration(infoViewConfiguration)
+                .setTarget(target)
+                .setUsageId("intro_card") //THIS SHOULD BE UNIQUE ID
+                .build();
+    }
+
+    @NonNull
+    private InfoViewConfiguration buildInfoViewConfiguration(LayoutInflater inflater) {
+        View customInfoView = inflater.inflate(R.layout.layout_custom_info_arrow_up, null);
+        InfoViewConfiguration infoViewConfiguration = new InfoViewConfiguration();
+        infoViewConfiguration.setInfoView(customInfoView);
+        //Add animation to custom info view
+        View ivArrow = customInfoView.findViewById(R.id.iv_arrow);
+        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(ivArrow, View.TRANSLATION_Y, 0, 20, 0);
+        objectAnimator.setDuration(1000);
+        objectAnimator.setRepeatCount(ObjectAnimator.INFINITE);
+        objectAnimator.setRepeatMode(ObjectAnimator.REVERSE);
+        infoViewConfiguration.setAnimator(objectAnimator);
+        infoViewConfiguration.setAlignCenter(true);
+        return infoViewConfiguration;
+    }
 
     private MaterialIntroView buildFirstIntro(LayoutInflater inflater, Button button) {
         MaterialIntroView materialIntroView = (MaterialIntroView) inflater.inflate(R.layout.layout_custom_material_intro_view, null);
