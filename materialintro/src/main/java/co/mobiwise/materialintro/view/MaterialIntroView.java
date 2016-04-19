@@ -423,10 +423,9 @@ public class MaterialIntroView extends RelativeLayout {
         }
 
         setReady(true);
+        int height = getNavigationBarHeight();
 
-        //set padding distance to bottom navigation bar if device has bottom navigation bar
-        int identifier = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-        int height = getResources().getDimensionPixelSize(identifier);
+
         setPadding(0, 0, 0, height);
 
         handler.postDelayed(new Runnable() {
@@ -444,9 +443,15 @@ public class MaterialIntroView extends RelativeLayout {
             }
         }, delayMillis);
 
-        if(isIdempotent) {
+        if (isIdempotent) {
             preferencesManager.setDisplayed(materialIntroViewId);
         }
+    }
+
+    private int getNavigationBarHeight() {
+        //set padding distance to bottom navigation bar if device has bottom navigation bar
+        int identifier = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        return getResources().getDimensionPixelSize(identifier);
     }
 
     @SuppressLint("NewApi")
@@ -468,7 +473,7 @@ public class MaterialIntroView extends RelativeLayout {
      * Dismiss Material Intro View
      */
     public void dismiss() {
-        if(!isIdempotent) {
+        if (!isIdempotent) {
             preferencesManager.setDisplayed(materialIntroViewId);
         }
 
@@ -533,8 +538,9 @@ public class MaterialIntroView extends RelativeLayout {
 
 
     private void setCustomInfoLayout() {
-        RelativeLayout.LayoutParams infoDialogParams = new RelativeLayout.LayoutParams(
-                Utils.dpToPx(260),
+        RelativeLayout.LayoutParams infoDialogParams =
+                new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
         int leftMargin = 0;
@@ -554,7 +560,7 @@ public class MaterialIntroView extends RelativeLayout {
                     leftMargin,
                     0,
                     0,
-                    height - (targetShape.getPoint().y + targetShape.getHeight()) + 2 * targetShape.getHeight());
+                    height - getNavigationBarHeight() - targetShape.getPoint().y + targetShape.getHeight());
         }
 
         infoView.setLayoutParams(infoDialogParams);
@@ -580,21 +586,21 @@ public class MaterialIntroView extends RelativeLayout {
                 ViewGroup.LayoutParams.MATCH_PARENT);
         Log.i(TAG, "infoDialogParams: width=" + infoDialogParams.width + " height=" + infoDialogParams.height);
 
-                if (targetShape.getPoint().y < height / 2) {
-                    ((RelativeLayout) infoView).setGravity(Gravity.TOP);
-                    infoDialogParams.setMargins(
-                            0,
-                            targetShape.getPoint().y + targetShape.getHeight() / 2,
-                            0,
-                            0);
-                } else {
-                    ((RelativeLayout) infoView).setGravity(Gravity.BOTTOM);
-                    infoDialogParams.setMargins(
-                            0,
-                            0,
-                            0,
-                            height - (targetShape.getPoint().y + targetShape.getHeight() / 2) + 2 * targetShape.getHeight() / 2);
-                }
+        if (targetShape.getPoint().y < height / 2) {
+            ((RelativeLayout) infoView).setGravity(Gravity.TOP);
+            infoDialogParams.setMargins(
+                    0,
+                    targetShape.getPoint().y + targetShape.getHeight() / 2,
+                    0,
+                    0);
+        } else {
+            ((RelativeLayout) infoView).setGravity(Gravity.BOTTOM);
+            infoDialogParams.setMargins(
+                    0,
+                    0,
+                    0,
+                    height - (targetShape.getPoint().y + targetShape.getHeight() / 2) + 2 * targetShape.getHeight() / 2);
+        }
 
         infoView.setLayoutParams(infoDialogParams);
         infoView.postInvalidate();
@@ -708,11 +714,11 @@ public class MaterialIntroView extends RelativeLayout {
         this.isImageViewEnabled = isImageViewEnabled;
     }
 
-    private void setIdempotent(boolean idempotent){
+    private void setIdempotent(boolean idempotent) {
         this.isIdempotent = idempotent;
     }
 
-    private void enableDotView(boolean isDotViewEnabled){
+    private void enableDotView(boolean isDotViewEnabled) {
         this.isDotViewEnabled = isDotViewEnabled;
     }
 
@@ -866,20 +872,20 @@ public class MaterialIntroView extends RelativeLayout {
             return this;
         }
 
-        public Builder performClick(boolean isPerformClick){
+        public Builder performClick(boolean isPerformClick) {
             materialIntroView.setPerformClick(isPerformClick);
             return this;
         }
 
         public MaterialIntroView build() {
-            if(materialIntroView.usesCustomShape) {
+            if (materialIntroView.usesCustomShape) {
                 return materialIntroView;
             }
 
             // no custom shape supplied, build our own
             Shape shape;
 
-            if(materialIntroView.shapeType == ShapeType.CIRCLE) {
+            if (materialIntroView.shapeType == ShapeType.CIRCLE) {
                 shape = new Circle(
                         materialIntroView.targetView,
                         materialIntroView.focusType,
