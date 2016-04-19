@@ -12,19 +12,19 @@ public interface Target {
      * Returns center point of target.
      * We can get x and y coordinates using
      * point object
-     * @return
+     * @return Point for location
      */
     Point getPoint();
 
     /**
      * Returns Rectangle points of target view
-     * @return
+     * @return rect
      */
     Rect getRect();
 
     /**
      * return target view
-     * @return
+     * @return view
      */
     View getView();
 }

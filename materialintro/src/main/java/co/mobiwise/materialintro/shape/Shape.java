@@ -62,5 +62,5 @@ public abstract class Shape {
      * @param y y-axis location of click
      * @return true if click is inside shape
      */
-    public abstract boolean isTouchOnFocus(double x, double t);
+    public abstract boolean isTouchOnFocus(double x, double y);
 }
