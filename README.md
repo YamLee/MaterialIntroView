@@ -27,7 +27,7 @@ new MaterialIntroView.Builder(this)
 Module build.gradle
 ```java
 dependencies {
-  compile 'com.yamlee:materialintro:1.0.2'
+  compile 'com.yamlee:materialintro:1.0.6'
 }
 ```
 
