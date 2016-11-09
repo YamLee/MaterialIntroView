@@ -341,6 +341,13 @@ public class MaterialIntroView extends RelativeLayout {
 
         if (!isReady) return;
 
+        width = getMeasuredWidth();
+        height = getMeasuredHeight();
+
+        if (width == 0 || height == 0) {
+            return;
+        }
+
         if (bitmap == null || canvas == null) {
             if (bitmap != null) bitmap.recycle();
 
