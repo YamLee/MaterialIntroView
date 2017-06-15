@@ -23,6 +23,11 @@ android {
         }
     }
 
+    lintOptions{
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
 }
 
 dependencies {
@@ -35,7 +40,7 @@ dependencies {
 
 // 这个version是区分library版本的，因此当我们需要更新library时记得修改这个version
 // 这个version影响后面的引用
-version = "1.0.8"
+version = "1.0.10"
 def siteUrl = 'https://github.com/YamLee/MaterialIntroView'   // 项目的主页
 def gitUrl = 'git@github.com:YamLee/MaterialIntroView.git'   // Git仓库的url
 group = "com.yamlee"           // Maven Group ID for the artifact，一般填你唯一的包名
