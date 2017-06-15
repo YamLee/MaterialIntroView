@@ -305,7 +305,9 @@ public class MaterialIntroView extends RelativeLayout {
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                targetShape.reCalculateAll();
+                if (targetShape != null) {
+                    targetShape.reCalculateAll();
+                }
                 if (targetShape != null && targetShape.getPoint().y != 0 && !isLayoutCompleted) {
                     if (isInfoEnabled)
                         setInfoLayout();
